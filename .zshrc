@@ -112,10 +112,22 @@ if [[ $(echo $(minikube status -o json) | \
     sed 's/,$//') == '"Host":"Running"' ]]; then
 
     # minikube is started and ready to enable docker
-    eval $(minikube -p minikube docker-env)
+    if [[ $(echo $(minikube status -o json) | \
+    grep -o '"[^"]*"\s*:\s*"[^"]*"' | \
+    grep -E '^"(DockerEnv)"' | \
+    sed 's/,$//') != '"DockerEnv":"in-use"' ]]; then
+        echo "Activating docker ..."
+        eval $(minikube -p minikube docker-env)
+        echo "Docker is ready"
+    else
+        echo "Docker is ready"
+    fi
 
 else
     # start minikube
     minikube start
+
+    echo "Activating docker ..."
     eval $(minikube -p minikube docker-env)
+    echo "Docker is ready"
 fi
